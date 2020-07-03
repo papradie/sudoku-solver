@@ -2,6 +2,7 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
+  mode: 'development',
   module: {
     rules: [
       {
@@ -20,11 +21,19 @@ module.exports = {
           }
         ]
       },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' },
+      },
      {
        test: /\.css$/,
        use: [MiniCssExtractPlugin.loader, "css-loader"]
      }
     ]
+  },
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist',
   },
   plugins: [
     new HtmlWebPackPlugin({
