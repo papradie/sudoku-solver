@@ -1,53 +1,44 @@
 
 let counter = 0;
-let interimSolution = undefined;
 let lastUpdate = 0;
 const UPDATE_INTERVAL = 1000000;
 
-
 self.addEventListener('message', function(e) {
-
     switch (e.data.type) {
-        case "progress": {
-            /*postMessage({
-                interimSolution, counter
-            });*/
-            break;
-        }
         case "start": {
             const solution = solve(e.data.level);
-
             postMessage({ solution, counter });
             break;
         }
         default:
             break;
     }
-
-
 }, false);
 
-function solve(inputBoard) {
+function trackProgress (inputBoard) {
     counter++;
-    interimSolution = inputBoard;
-
     if (counter - lastUpdate > UPDATE_INTERVAL) {
         lastUpdate = counter;
 
-        postMessage( counter );
+        postMessage({
+            solution: {
+                solved: false,
+                board: inputBoard
+            },
+            counter
+        });
     }
+}
+
+function solve(inputBoard) {
+    trackProgress(inputBoard);
 
     let [row, col] = getEmptySquare (inputBoard);
-
     if (row === undefined) {
-        return {
-            solved: true,
-            board:inputBoard
-        }
+        return { solved: true, board: inputBoard }
     }
 
     let result;
-
     for (let i = 1; i < 10; i++) {
         if (isPossibleToSet(inputBoard, row, col, i)) {
             inputBoard [row][col] = i;
@@ -60,10 +51,7 @@ function solve(inputBoard) {
     }
 
     inputBoard[row][col] = 0;
-    return {
-        solved: false,
-        board: inputBoard
-    }
+    return { solved: false, board: inputBoard }
 }
 
 function getEmptySquare(board) {

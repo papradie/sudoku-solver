@@ -1,0 +1,56 @@
+
+:root {
+    --field-size: 40px;
+    --border-size: 2px;
+}
+
+body {
+    font-family: Helvetica,Arial,sans-serif;
+}
+
+#original-sudoku {
+    float: left;
+}
+
+#solved-sudoku {
+    float: left;
+    margin: 0 50px;
+}
+
+.sudoku-wrapper {
+    border: var(--border-size) solid black;
+    width: calc(var(--field-size) * 9 + var(--border-size) * 2 * 9);
+}
+
+.sudoku-wrapper .box-wrapper {
+    position: absolute;
+    width: inherit;
+}
+
+.sudoku-wrapper .box {
+    border: var(--border-size) solid black;
+    float: left;
+    height: calc(var(--field-size) * 3 + var(--border-size) * 2 * 2);
+    width: calc(var(--field-size) * 3 + var(--border-size) * 2 * 2);
+}
+
+.sudoku-wrapper .field {
+    border: var(--border-size) solid lightgray;
+    float: left;
+    height: var(--field-size);
+    line-height: var(--field-size);
+    text-align: center;
+    width: var(--field-size);
+}
+
+.clearfix {
+    clear: both;
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}

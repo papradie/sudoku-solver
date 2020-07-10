@@ -1,4 +1,6 @@
 import Worker from './backtracking.worker.js';
+import { createGui, removeChildren } from './gui';
+import css from './main.css';
 
 const sudoku01 = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -36,21 +38,47 @@ const diabolicSudoku = [
     [0, 0, 0, 0, 4, 0, 0, 0, 9],
 ];
 
+const statisticsWrapper = document.getElementById('stats');
+const originalSudokuWrapper = document.getElementById("original-sudoku");
+const solvedSudokuWrapper = document.getElementById("solved-sudoku");
 
-const worker = new Worker();
-
-const startTime = new Date();
-
-worker.postMessage({ type: "start", level: normalSudoku });
-worker.onmessage = function (event) {
-    console.log(`Time: ${(new Date() - startTime)}, Value: ${JSON.stringify(event.data)}`);
+const displayStats = (timeElapsed, visitedNodes) => {
+    statisticsWrapper.innerText = `
+            Time elapsed: ${timeElapsed}
+            Nodes visited: ${visitedNodes}
+        `;
 };
 
-//setInterval(() => worker.postMessage({type: "progress"}), 1000);
+const run = sudoku => {
+    originalSudokuWrapper.appendChild(
+        createGui(sudoku)
+    );
 
-worker.onerror = function (error) {
-    console.log(error);
+    const startTime = performance.now();
+
+    const worker = new Worker();
+    worker.onmessage = function (event) {
+        console.log(`Time: ${(new Date() - startTime)}, Value: ${JSON.stringify(event.data)}`);
+
+        if (event.data.solution) {
+            removeChildren(solvedSudokuWrapper);
+
+            solvedSudokuWrapper.appendChild(
+                createGui(event.data.solution.board, sudoku, event.data.solution.solved)
+            );
+        }
+
+        displayStats(performance.now() - startTime, event.data.counter);
+    };
+
+    worker.onerror = function (error) {
+        console.log(error);
+    };
+
+    worker.postMessage({ type: "start", level: sudoku });
 };
+
+run(diabolicSudoku);
 
 
 
