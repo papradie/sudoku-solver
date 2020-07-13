@@ -1,4 +1,5 @@
 import Worker from './backtracking.worker.js';
+import BitboardWorker from './backtrackingWithBitboards.worker';
 import { createGui, removeChildren } from './gui';
 import css from './main.css';
 
@@ -38,37 +39,41 @@ const diabolicSudoku = [
     [0, 0, 0, 0, 4, 0, 0, 0, 9],
 ];
 
-const statisticsWrapper = document.getElementById('stats');
-const originalSudokuWrapper = document.getElementById("original-sudoku");
-const solvedSudokuWrapper = document.getElementById("solved-sudoku");
-
-const displayStats = (timeElapsed, visitedNodes) => {
-    statisticsWrapper.innerText = `
+const displayStats = (wrapper, timeElapsed, visitedNodes) => {
+    wrapper.innerText = `
             Time elapsed: ${timeElapsed}
             Nodes visited: ${visitedNodes}
         `;
 };
 
-const run = sudoku => {
-    originalSudokuWrapper.appendChild(
+const initSudoku = (prefix, sudoku, worker) => {
+    document.getElementById(prefix + "-original-sudoku").appendChild(
         createGui(sudoku)
     );
+    document.getElementById(prefix + "-start").onclick = function() {
+        run(prefix, sudoku, worker);
+    };
+};
+
+const run = (prefix, sudoku, worker) => {
+    const statisticsWrapper = document.getElementById(prefix + '-stats');
+    const solvedSudokuWrapper = document.getElementById(prefix + "-solved-sudoku");
 
     const startTime = performance.now();
 
-    const worker = new Worker();
     worker.onmessage = function (event) {
-        console.log(`Time: ${(new Date() - startTime)}, Value: ${JSON.stringify(event.data)}`);
-
         if (event.data.solution) {
             removeChildren(solvedSudokuWrapper);
-
             solvedSudokuWrapper.appendChild(
                 createGui(event.data.solution.board, sudoku, event.data.solution.solved)
             );
+
+            if (event.data.solution.solved) {
+                worker.terminate();
+            }
         }
 
-        displayStats(performance.now() - startTime, event.data.counter);
+        displayStats(statisticsWrapper,performance.now() - startTime, event.data.counter);
     };
 
     worker.onerror = function (error) {
@@ -78,7 +83,9 @@ const run = sudoku => {
     worker.postMessage({ type: "start", level: sudoku });
 };
 
-run(diabolicSudoku);
+initSudoku('backtracking', diabolicSudoku, new Worker());
+initSudoku('bb-backtracking', diabolicSudoku, new BitboardWorker());
+
 
 
 

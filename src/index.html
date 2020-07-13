@@ -4,15 +4,54 @@
     </head>
 
     <body>
+        <h1>Sudoku solver</h1>
+
+        <h2>Backtracking</h2>
+
         <p>
-            This sudoku was constructed specifically to mess with backtracking algorithm.
-            Huge number of iterations is needed to find the solution with backtracking.
+            Backtracking is brute force algorithm. It can be used to find solution to wide range of problems, not only sudoku.
+            From development point of view, it is probably the easiest approach of finding sudoku solution.
+            But it is also least effective in terms of computing time.
+        </p>
+        <p>
+            Sudoku below was constructed specifically to mess with backtracking algorithm. Huge number of iterations are
+            needed to find the solution with backtracking. Naive approach, where all numbers 1 to 9 are tried on all
+            empty squares requires almost 70 million boards to be evaluated, until solution is find.
         </p>
 
-        <div id="main">
-            <div id="original-sudoku"></div>
-            <div id="solved-sudoku"></div>
-            <div id="stats"></div>
+        <h3>Naive backtracking implementation</h3>
+
+        <p>Let's see, how quickly we can find a solution:</p>
+
+        <div id="backtracking-main">
+            <div id="backtracking-original-sudoku" class="original-sudoku"></div>
+            <div id="backtracking-solved-sudoku" class="solved-sudoku">
+                <button id="backtracking-start">Solve</button>
+            </div>
+            <div id="backtracking-stats"></div>
+            <div class="clearfix"></div>
+        </div>
+
+        <h3>Backtracking implementation with bit boards</h3>
+
+        <p>
+            And now, same backtracking algorithm, same number of boards is evaluated. But we use more efficient internal
+            representation. Instead of traversing array and searching if given number is already placed in row/column/box,
+            we use bit boards. As a result, we can find solution two times faster.
+        </p>
+
+        <p>
+            Please note, that we still didn't implement any heuristics to narrow search space. We still check all 70 millions
+            of boards until we find solution. But thanks to efficient implementation, we can do it much faster.
+        </p>
+
+        <div id="bb-backtracking">
+            <div id="bb-backtracking-original-sudoku" class="original-sudoku"></div>
+            <div id="bb-backtracking-solved-sudoku" class="solved-sudoku">
+                <button id="bb-backtracking-start">Solve</button>
+            </div>
+            <div id="bb-backtracking-stats"></div>
+            <div class="clearfix"></div>
         </div>
     </body>
 </html>

@@ -8,11 +8,11 @@ body {
     font-family: Helvetica,Arial,sans-serif;
 }
 
-#original-sudoku {
+.original-sudoku {
     float: left;
 }
 
-#solved-sudoku {
+.solved-sudoku {
     float: left;
     margin: 0 50px;
 }
