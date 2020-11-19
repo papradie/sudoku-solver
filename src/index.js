@@ -1,4 +1,5 @@
 import Worker from './backtracking.worker.js';
+import NarrowedWorker from './backtrackingNarrowedSpace.worker';
 import BitboardWorker from './backtrackingWithBitboards.worker';
 import { createGui, removeChildren } from './gui';
 import css from './main.css';
@@ -41,7 +42,7 @@ const diabolicSudoku = [
 
 const displayStats = (wrapper, timeElapsed, visitedNodes) => {
     wrapper.innerText = `
-            Time elapsed: ${timeElapsed}
+            Time (milliseconds): ${Math.floor(timeElapsed)}
             Nodes visited: ${visitedNodes}
         `;
 };
@@ -84,6 +85,7 @@ const run = (prefix, sudoku, worker) => {
 };
 
 initSudoku('backtracking', diabolicSudoku, new Worker());
+initSudoku('bns-backtracking', diabolicSudoku, new NarrowedWorker());
 initSudoku('bb-backtracking', diabolicSudoku, new BitboardWorker());
 
 

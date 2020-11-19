@@ -3,9 +3,13 @@ let counter = 0;
 let lastUpdate = 0;
 const UPDATE_INTERVAL = 2000000;
 
+const empties = [];
+let emptyPointer = 0;
+
 self.addEventListener('message', function(e) {
     switch (e.data.type) {
         case "start": {
+            initEmpties(e.data.level);
             const solution = solve(e.data.level);
             postMessage({ solution, counter });
             break;
@@ -30,17 +34,37 @@ function trackProgress (inputBoard) {
     }
 }
 
+function initEmpties (inputBoard) {
+    for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+            if (inputBoard[row][col] === 0) {
+                const candidates = [];
+                for (let i = 1; i < 10; i++) {
+                    if (isPossibleToSet(inputBoard, row, col, i)) {
+                        candidates.push(i);
+                    }
+                }
+
+                empties.push([row, col, candidates]);
+            }
+        }
+    }
+}
+
 function solve(inputBoard) {
     trackProgress(inputBoard);
 
-    let [row, col] = getEmptySquare (inputBoard);
-    if (row === undefined) {
+    if (emptyPointer === empties.length) {
         return { solved: true, board: inputBoard }
     }
 
+    let [row, col, candidates] = empties[emptyPointer];
+    emptyPointer++;
+
     let result;
-    for (let i = 1; i < 10; i++) {
-        counter++
+    for(let j = 0; j < candidates.length; j++) {
+        counter++;
+        const i = candidates[j];
         if (isPossibleToSet(inputBoard, row, col, i)) {
             inputBoard [row][col] = i;
 
@@ -52,16 +76,8 @@ function solve(inputBoard) {
     }
 
     inputBoard[row][col] = 0;
+    emptyPointer--;
     return { solved: false, board: inputBoard }
-}
-
-function getEmptySquare(board) {
-    for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
-            if (board[i][j] === 0) return [i,j]
-        }
-    }
-    return []
 }
 
 function isPossibleToSet(board, row, col, number) {

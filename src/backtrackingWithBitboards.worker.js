@@ -1,15 +1,19 @@
 let counter = 0;
 let lastUpdate = 0;
-const UPDATE_INTERVAL = 1000000;
+const UPDATE_INTERVAL = 2000000;
 
 const rowBits = [0,0,0,0,0,0,0,0,0];
 const colBits = [0,0,0,0,0,0,0,0,0];
 const boxBits = [0,0,0,0,0,0,0,0,0];
 
+const empties = [];
+let emptyPointer = 0;
+
 self.addEventListener('message', function(e) {
     switch (e.data.type) {
         case "start": {
             initBitboards(e.data.level);
+            initEmpties(e.data.level)
             const solution = solve(e.data.level);
             postMessage({ solution, counter });
             break;
@@ -20,8 +24,8 @@ self.addEventListener('message', function(e) {
 }, false);
 
 function trackProgress (inputBoard) {
-    counter++;
-    if (counter - lastUpdate > UPDATE_INTERVAL) {
+    //counter++;
+    if (counter - lastUpdate >= UPDATE_INTERVAL) {
         lastUpdate = counter;
 
         postMessage({
@@ -37,14 +41,20 @@ function trackProgress (inputBoard) {
 function solve(inputBoard) {
     trackProgress(inputBoard);
 
-    let [row, col] = getEmptySquare (inputBoard);
-    if (row === undefined) {
+    if (emptyPointer === empties.length) {
         return { solved: true, board: inputBoard }
     }
+
+    let [row, col, candidates] = empties[emptyPointer];
+    emptyPointer++;
+
     const box = ~~(row/3)*3 + ~~(col/3);
 
     let result;
-    for (let i = 1; i < 10; i++) {
+    for (let j = 0; j < candidates.length; j++) {
+        counter++;
+        const i = candidates[j];
+
         if (isPossibleToSet(row, col, box, i)) {
             inputBoard [row][col] = i;
             rowBits[row] |= (1 << (i - 1));
@@ -63,21 +73,28 @@ function solve(inputBoard) {
     }
 
     inputBoard[row][col] = 0;
-
+    emptyPointer--;
 
     return { solved: false, board: inputBoard }
 }
 
-function getEmptySquare(board) {
-    for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
-            if (board[i][j] === 0) return [i,j]
+function initEmpties (inputBoard) {
+    for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+            if (inputBoard[row][col] === 0) {
+                const candidates = [];
+                const box = ~~(row/3)*3 + ~~(col/3);
+                for (let i = 1; i < 10; i++) {
+                    if (isPossibleToSet(row, col, box, i)) {
+                        candidates.push(i);
+                    }
+                }
+
+                empties.push([row, col, candidates]);
+            }
         }
     }
-    return []
 }
-
-
 
 const initBitboards = board => {
     for (let i = 0; i < 9; i++) {
@@ -93,8 +110,8 @@ const initBitboards = board => {
     }
 };
 
-function isPossibleToSet (row, col, box, number) {
-    return (rowBits[row] & (1 << (number - 1))) === 0 &&
-            (colBits[col] & (1 << (number - 1))) === 0 &&
-            (boxBits[box] & (1 << (number - 1))) === 0;
+function isPossibleToSet (row, col, box, digit) {
+    return (rowBits[row] & (1 << (digit - 1))) === 0 &&
+            (colBits[col] & (1 << (digit - 1))) === 0 &&
+            (boxBits[box] & (1 << (digit - 1))) === 0;
 }
